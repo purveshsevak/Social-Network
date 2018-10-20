@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Home</title>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="col-md-3" align="center">
+        <br>
+        {% if user.userprofile.image %}
+        <img src="{{ user.userprofile.image.url }}" width="200" height="200" class="img-circle">
+        {% endif %}
+        <h3>{{ user.get_full_name }}</h3>
+    </div>
+
+    <div class="col-md-6">
+        <h3>News Feed</h3>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.post }}
+            <br>
+            <button type="submit" class="btn btn-info btn-sm">Share</button>
+        </form>
+        <br>
+        <h3>{{ text }}</h3>
+
+        {% for post in posts %}
+            <h4>
+                {% if user.userprofile.image %}
+                    <img src="{{ post.user.userprofile.image.url }}" width="30" height="30" class="img-rounded">
+                {% endif %}
+                {{ post.user.get_full_name }} <small> {{ post.created }}</small>
+            </h4>
+            <h5>{{ post.post }}</h5>
+            <br>
+            <div class="row" style="height:3%">
+                <div class="col-md-6" align="center">
+                    <button type="submit" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-thumbs-up"></i> Like</button>
+                </div>
+                <div class="col-md-6" align="center">
+                    <a class="btn btn-default btn-xs"
+                       href="{% url 'home:add_comment_to_post' pk=post.pk %}">
+                        <i class="glyphicon glyphicon-comment"></i> Comment
+                    </a>
+                </div>
+            </div>
+        <br>
+
+            {% if comment in post.comments.all%}
+                <h5>Comments</h5>
+            {% endif %}
+
+            {% for comment in post.comments.all %}
+                <div class="container">
+                    <h5>
+                        {% if comment.user.userprofile.image %}
+                            <img src="{{ comment.user.userprofile.image.url }}" width="20" height="20" class="img-rounded">
+                        {% endif %}
+                        {{ comment.user.get_full_name }} <small> {{ comment.created }}</small>
+                    </h5>
+                </div>
+                <div class="container">
+                    <h5>
+                        {{ comment.comment }}
+                    </h5>
+                </div>
+            {% endfor %}
+            <hr>
+            <br>
+        {% endfor %}
+
+    </div>
+
+    <div class="col-md-3">
+        <h3>Friends</h3>
+        {% for friend in friends %}
+        <a href="{% url 'accounts:view_profile_with_pk' pk=friend.pk %}">
+            <h4>{{ friend.get_full_name }}</h4>
+        </a>
+        <a href="{% url 'home:change_friends' operation='remove' pk=friend.pk %}">
+            <button type="button" class="btn btn-danger btn-xs">Remove</button>
+        </a>
+        {% endfor %}
+        <hr class = "line" />
+
+        <h3>Suggestions</h3>
+        {% for user in users %}
+        {% if not user in friends %}
+        <a href="{% url 'accounts:view_profile_with_pk' pk=user.pk %}">
+            <h4>{{ user.get_full_name }}</h4>
+        </a>
+
+            <a href="{% url 'home:change_friends' operation='add' pk=user.pk %}">
+                <button type="button" class="btn btn-success btn-xs">Add</button>
+            </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
